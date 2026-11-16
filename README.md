@@ -114,6 +114,10 @@ links connect commands to game hands without changing the game trace hierarchy. 
 bounded decision counts, and recovery/error events go to the same endpoint. See the
 [bot guide](docs/bot-instrumentation.md) and [signal reference](docs/bot-signals.md).
 
+For bot analysis, autoplay emits structured OpenTelemetry log events containing play/discard
+observations, exact selections and debug intervention history. They use the same OTLP exporter
+and Collector as the existing signals. See the [observation guide](docs/bot-observations.md).
+
 Local Python runs now use the locked SDK dependencies:
 
 ```sh

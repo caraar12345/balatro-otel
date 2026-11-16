@@ -11,7 +11,7 @@ For interpretation, scope, and limitations see [bot instrumentation](bot-instrum
 | --- | --- |
 {% for attr in signal.attributes %}| `{{ attr.key }}` | {{ attr.brief | replace("\n", " ") | trim }} |
 {% endfor %}{% endif %}{% endfor %}{% endfor %}
-{% for group in ctx.events %}{% for signal in group.events %}{% if signal.name in ["balatro.bot.recovery", "balatro.bot.request.failed"] %}
+{% for group in ctx.events %}{% for signal in group.events %}{% if signal.name in ["balatro.bot.recovery", "balatro.bot.request.failed", "balatro.bot.episode.start", "balatro.bot.action.requested", "balatro.bot.action.result", "balatro.bot.intervention.requested", "balatro.bot.intervention.result", "balatro.bot.episode.outcome", "balatro.bot.episode.end"] %}
 ## Event: `{{ signal.name }}`
 
 {{ signal.brief | trim }}

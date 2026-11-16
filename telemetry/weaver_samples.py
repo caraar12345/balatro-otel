@@ -9,6 +9,20 @@ import json
 import sys
 
 
+def any_value(value):
+    """Decode the scalar and nested AnyValue shapes emitted by our Python SDK."""
+    for field, convert in (("stringValue", str), ("boolValue", bool), ("intValue", int), ("doubleValue", float)):
+        if field in value:
+            return convert(value[field])
+    if "kvlistValue" in value:
+        return {item["key"]: any_value(item["value"]) for item in value["kvlistValue"].get("values", [])}
+    if "arrayValue" in value:
+        return [any_value(item) for item in value["arrayValue"].get("values", [])]
+    if not value:
+        return None
+    raise ValueError(f"unsupported OTLP AnyValue shape: {list(value)}")
+
+
 def attributes(items):
     types = {
         "stringValue": ("string", str),
@@ -19,9 +33,13 @@ def attributes(items):
     result = []
     for item in items:
         value = item["value"]
-        field = next(iter(value))
-        kind, convert = types[field]
-        result.append({"name": item["key"], "type": kind, "value": convert(value[field])})
+        field = next(iter(value), None)
+        sample = {"name": item["key"], "value": any_value(value)}
+        if field in types:
+            sample["type"] = types[field][0]
+        # Weaver's file format has no explicit map type. Preserve the native value,
+        # leaving type inference unset for maps and heterogeneous/complex arrays.
+        result.append(sample)
     return result
 
 
@@ -63,6 +81,8 @@ def samples(payload):
                         "severity_text": record.get("severityText", ""),
                         "body": record.get("body", {}).get("stringValue", ""),
                         "attributes": attributes(record.get("attributes", [])),
+                        "trace_id": record.get("traceId"),
+                        "span_id": record.get("spanId"),
                     }
                 }
     for resource in payload.get("resourceMetrics", []):

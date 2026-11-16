@@ -1,7 +1,7 @@
 """OpenTelemetry bootstrap and bounded application observations for the Python player.
 
 Uses upstream JSON-RPC conventions v1.44.0; custom signals are defined in telemetry/registry/bot.yaml.
-No request parameters or game-state responses are exported.
+Projected game observations and exact selected actions are exported as structured log events.
 """
 
 import atexit
@@ -31,7 +31,7 @@ from opentelemetry.semconv.attributes import server_attributes as SERVER
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 VERSION = "0.4.0"
-SCHEMA = "https://balatro-tracing.local/schemas/0.4.0"
+SCHEMA = "https://balatro-tracing.local/schemas/0.4.1"
 METHODS = frozenset(
     (
         "health",
@@ -224,4 +224,13 @@ def recovery(state):
             ERROR.ERROR_TYPE: "rpc_error",
             **(_run_attributes.get() or {}),
         },
+    )
+
+
+def event(name, attributes, severity=SeverityNumber.INFO):
+    runtime().logger.emit(
+        event_name=name,
+        timestamp=time.time_ns(),
+        severity_number=severity,
+        attributes={**(_run_attributes.get() or {}), **attributes},
     )

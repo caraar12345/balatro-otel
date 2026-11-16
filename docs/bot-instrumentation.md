@@ -92,8 +92,10 @@ state, since a timeout does not prove that the action failed to execute. It does
 replay an uncertain `play`, `buy`, or other action.
 
 Hand selection records `flush`, `rank_group`, or `high_cards`. Decision spans describe state and
-whether debug assistance is enabled; their nested RPC spans identify the commands taken. The new
-instrumentation does not record full request parameters or game-state responses. Existing upstream
+whether debug assistance is enabled; their nested RPC spans identify the commands taken. The OTLP
+spans do not record full request parameters or game-state responses. Autoplay also emits
+[structured observation log events](bot-observations.md) with projected state, exact play/discard
+requests and debug intervention history through the same OTLP pipeline. Existing upstream
 messages captured by the Steamodded log bridge are unaffected.
 
 ## Metrics and export lifecycle
@@ -134,7 +136,7 @@ compatibility boundary. Tracestate and baggage are not forwarded by the Lua adap
 
 Weaver skill verification:
 
-- [x] Versioned manifest uses `definition_manifest/2.0` and schema URL ending in `0.4.0`.
+- [x] Versioned manifest uses `definition_manifest/2.0`; the observation events extend schema `0.4.1`.
 - [x] Local definitions and enum members declare stability.
 - [x] Custom signals use `balatro.*`; RPC spans/metrics and standard attributes are imported/referenced.
 - [x] No boundary-domain definitions are duplicated locally.

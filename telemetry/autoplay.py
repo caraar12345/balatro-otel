@@ -19,7 +19,9 @@ import time
 import urllib.error
 import urllib.request
 
+import bot_observations as observations
 import bot_telemetry as telemetry
+from opentelemetry import trace
 
 _request_ids = itertools.count(1)
 
@@ -34,7 +36,12 @@ class RPCError(Exception):
 
 def rpc(port, method, **params):
     request_id = next(_request_ids)
-    with telemetry.client_call(port, method, request_id) as (_, headers):
+    parent = trace.get_current_span().get_span_context()
+    decision_span_id = f"{parent.span_id:016x}" if parent.is_valid else None
+    with (
+        telemetry.client_call(port, method, request_id) as (_, headers),
+        observations.request(method, params, request_id, decision_span_id) as observation,
+    ):
         body = json.dumps({"jsonrpc": "2.0", "method": method, "params": params, "id": request_id}).encode()
         headers["Content-Type"] = "application/json"
         req = urllib.request.Request(f"http://127.0.0.1:{port}", body, headers)
@@ -56,6 +63,7 @@ def rpc(port, method, **params):
             raise RPCError(f"{method}: {error}", kind="jsonrpc_error", code=code)
         if "result" not in reply:
             raise RPCError(f"{method}: missing result", kind="protocol_error")
+        observation["result"] = reply["result"]
         return reply["result"]
 
 
@@ -122,7 +130,20 @@ def main():
     ap.add_argument("--max-rounds", type=int, default=12)
     ap.add_argument("--port", type=int, default=12346)
     args = ap.parse_args()
-    with telemetry.run(args.seed, args.deck, args.stake) as run_span:
+    with (
+        telemetry.run(args.seed, args.deck, args.stake) as run_span,
+        observations.recording(
+            {
+                "seed": args.seed,
+                "deck": args.deck,
+                "stake": args.stake,
+                "policy": "autoplay-heuristic-v1",
+                "instrumentation_version": telemetry.VERSION,
+                "force_rounds": args.force_rounds,
+                "max_rounds": args.max_rounds,
+            },
+        ),
+    ):
         play_run(args, run_span)
 
 
@@ -162,7 +183,7 @@ def play_run(args, run_span):
                         s = call("discard", cards=[i for i in range(len(hand)) if i not in keep][:5] or [0])
                     else:
                         if forced and s["round"]["hands_left"] == 1:
-                            call("set", chips=10**9)  # make sure this hand wins the blind
+                            s = call("set", chips=10**9)  # make sure this hand wins the blind
                         s = call("play", cards=play)
                 elif state == "ROUND_EVAL":
                     s = call("cash_out")
@@ -191,6 +212,7 @@ def play_run(args, run_span):
         "game_over" if s["state"] == "GAME_OVER" else "max_rounds" if s["round_num"] > args.max_rounds else "step_limit"
     )
     run_span.set_attribute("balatro.bot.run.outcome", outcome)
+    observations.outcome(outcome, s)
     print(f"done: {s['state']} at ante {s['ante_num']}, round {s['round_num']}", flush=True)
     call("menu")
 

@@ -56,6 +56,72 @@ attributes:
     brief: "Recovery after a failed command; reread_state rather than replaying an uncertain action."
     examples: ["reread_state"]
 
+  - key: balatro.bot.episode.id
+    type: string
+    stability: development
+    brief: "Unique identity of one observed Python autoplay episode."
+    examples: ["d4658bd3-328c-42c3-b4b5-aee70e597036"]
+  - key: balatro.bot.event.sequence
+    type: int
+    stability: development
+    brief: "Episode-local emission sequence starting at 1; gaps can indicate incomplete observations."
+    examples: [1]
+  - key: balatro.bot.observation.version
+    type: int
+    stability: development
+    brief: "Version of the structured observation projection, currently 1."
+    examples: [1]
+  - key: balatro.bot.ever_assisted
+    type: boolean
+    stability: development
+    brief: "Whether a debug set/add request has returned a state successfully in this episode."
+    examples: [false]
+  - key: balatro.bot.assistance_uncertain
+    type: boolean
+    stability: development
+    brief: "Whether a debug mutation may have occurred without a confirmed state response."
+    examples: [false]
+  - key: balatro.bot.observation.incomplete
+    type: boolean
+    stability: development
+    brief: "Whether a local observer failed during this episode; does not detect exporter or backend loss."
+    examples: [false]
+  - key: balatro.bot.run.config
+    type: any
+    stability: development
+    brief: "Structured policy identity and run configuration, including seed and force/round limits; provenance rather than policy input."
+  - key: balatro.bot.command.parameters
+    type: any
+    stability: development
+    brief: "Exact structured play/discard or debug request parameters; card indices refer to observation.before.hand.cards."
+  - key: balatro.bot.observation.before
+    type: any
+    stability: development
+    brief: "Projected state before a command, with visible ordered cards and context; excludes remaining deck order and face-down card properties."
+  - key: balatro.bot.observation.after
+    type: any
+    stability: development
+    brief: "Projected state returned by a completed command; absent for unresolved commands."
+  - key: balatro.bot.observation.final
+    type: any
+    stability: development
+    brief: "Projected state at the bot stop condition, captured before menu cleanup."
+  - key: balatro.bot.decision.span_id
+    type: string
+    stability: development
+    brief: "Enclosing Python decision span ID in the same trace; log trace/span context identifies the client call."
+    examples: ["bbbbbbbbbbbbbbbb"]
+  - key: balatro.bot.request.sequence
+    type: int
+    stability: development
+    brief: "Sequence of the corresponding request event in the same episode."
+    examples: [2]
+  - key: balatro.bot.result.status
+    type: string
+    stability: development
+    brief: "Resolution status: completed or unresolved for commands, finished or error for episode termination."
+    examples: ["completed"]
+
 attribute_groups:
   - id: balatro.bot.rpc
     visibility: public
@@ -181,3 +247,229 @@ events:
       - ref: error.type
       - ref: session.id
       - ref: balatro.run.seed
+
+  - name: balatro.bot.episode.start
+    stability: development
+    requirement_level: recommended
+    brief: "The autoplay episode starts. Default severity is INFO; run.config contains structured provenance."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: balatro.bot.run.config
+        requirement_level: required
+
+  - name: balatro.bot.action.requested
+    stability: development
+    requirement_level: recommended
+    brief: "A play/discard command is about to be sent. Default severity is INFO; parameters and before-state are structured attributes."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: rpc.method
+        requirement_level: required
+      - ref: jsonrpc.request.id
+        requirement_level: required
+      - ref: balatro.bot.command.parameters
+        requirement_level: required
+      - ref: balatro.bot.observation.before
+        requirement_level: recommended
+      - ref: balatro.bot.decision.span_id
+        requirement_level: recommended
+
+  - name: balatro.bot.action.result
+    stability: development
+    requirement_level: recommended
+    brief: "A play/discard response completes or becomes unresolved. Default severity is INFO for completion and WARN when error.type is present; an RPC error does not prove rejection."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: balatro.bot.request.sequence
+        requirement_level: required
+      - ref: balatro.bot.result.status
+        requirement_level: required
+      - ref: balatro.bot.observation.after
+        requirement_level: recommended
+      - ref: rpc.response.status_code
+        requirement_level: recommended
+
+  - name: balatro.bot.intervention.requested
+    stability: development
+    requirement_level: recommended
+    brief: "A debug set/add mutation is about to be sent. Default severity is INFO; parameters describe the attempted change."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: rpc.method
+        requirement_level: required
+      - ref: jsonrpc.request.id
+        requirement_level: required
+      - ref: balatro.bot.command.parameters
+        requirement_level: required
+      - ref: balatro.bot.observation.before
+        requirement_level: recommended
+      - ref: balatro.bot.decision.span_id
+        requirement_level: recommended
+
+  - name: balatro.bot.intervention.result
+    stability: development
+    requirement_level: recommended
+    brief: "A debug set/add response completes or becomes unresolved. Default severity is INFO for completion and WARN when error.type is present; assistance provenance persists for the episode."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: balatro.bot.request.sequence
+        requirement_level: required
+      - ref: balatro.bot.result.status
+        requirement_level: required
+      - ref: balatro.bot.observation.after
+        requirement_level: recommended
+      - ref: rpc.response.status_code
+        requirement_level: recommended
+
+  - name: balatro.bot.episode.outcome
+    stability: development
+    requirement_level: recommended
+    brief: "The bot reaches its stop condition before menu cleanup. Default severity is INFO; final.won is independent of the stop reason."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: balatro.bot.run.outcome
+        requirement_level: required
+      - ref: balatro.bot.observation.final
+        requirement_level: required
+
+  - name: balatro.bot.episode.end
+    stability: development
+    requirement_level: recommended
+    brief: "The autoplay episode exits normally or with an exception. Default severity is INFO for normal exit and WARN for an exception; normal exit can include truncation."
+    note: |
+      Timestamp is the observed occurrence. Structured attributes follow the observation contract
+      in docs/bot-observations.md. Export uses the existing Python Logs SDK and OTLP pipeline;
+      log trace/span context identifies the active run or client call.
+    attributes:
+      - ref: balatro.bot.episode.id
+        requirement_level: required
+      - ref: balatro.bot.event.sequence
+        requirement_level: required
+      - ref: balatro.bot.observation.version
+        requirement_level: required
+      - ref: balatro.bot.ever_assisted
+        requirement_level: required
+      - ref: balatro.bot.assistance_uncertain
+        requirement_level: required
+      - ref: balatro.bot.observation.incomplete
+        requirement_level: required
+      - ref: balatro.run.seed
+        requirement_level: recommended
+      - ref: error.type
+        requirement_level: recommended
+      - ref: balatro.bot.result.status
+        requirement_level: required

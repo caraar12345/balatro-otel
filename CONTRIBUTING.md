@@ -17,6 +17,9 @@ Issues and pull requests are welcome.
   `BOT_TEST_OUTPUT=/tmp/otlp uv run --with-requirements telemetry/container/bot-requirements.txt python tests/bot_telemetry_test.py`.
   Regenerate `docs/bot-signals.md` using the same Weaver command with target `bot`.
   The container runner checks client/server parentage and links from commands to hands.
+  The Python suite also checks structured observation log exports, native trace correlation,
+  hidden-information redaction, intervention provenance, observer isolation and autoplay-loop capture.
+  Its encoded OTLP log samples are included in the existing Weaver live-check gate.
 - **Releases**: bump the version in `mod/otel-trace/otel-trace.json`, `mod/otel-trace/manifest.json`
   and `SDK_VERSION` in `mod/otel-trace/otel.lua`, plus the Python bot's version/schema constants and
   the registry schema URL when applicable, then push a `vX.Y.Z` tag. The release workflow
