@@ -203,6 +203,16 @@ class BotTelemetryTests(unittest.TestCase):
         self.runtime.logs.force_flush()
         return [r.log_record for r in self.logs.get_finished_logs()[self.log_start :]]
 
+    def test_lua_empty_maps_are_projected_as_objects(self):
+        state = self.hand_state()
+        state.update(used_vouchers=[], hands=[], blinds=[])
+        projected = observations.observation(state)
+        self.assertEqual(projected["used_vouchers"], {})
+        self.assertEqual(projected["hands"], {})
+        self.assertEqual(projected["blinds"], {})
+        state["used_vouchers"] = {"v_overstock_norm": "An extra shop slot"}
+        self.assertEqual(observations.observation(state)["used_vouchers"], state["used_vouchers"])
+
     def test_observations_export_as_structured_otlp_with_native_context(self):
         Handler.result = self.hand_state()
         Handler.result["hand"]["cards"][1].update(
@@ -216,6 +226,7 @@ class BotTelemetryTests(unittest.TestCase):
         events = self.observation_events()
         request = next(e for e in events if e.event_name == "balatro.bot.action.requested")
         result = next(e for e in events if e.event_name == "balatro.bot.action.result")
+        self.assertEqual(request.body, request.event_name)
         self.assertEqual(tuple(request.attributes["balatro.bot.command.parameters"]["cards"]), (2, 0))
         self.assertEqual(request.attributes["balatro.bot.observation.before"]["hand"]["cards"][0]["id"], 10)
         self.assertEqual(

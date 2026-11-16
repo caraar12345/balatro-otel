@@ -34,6 +34,8 @@ which reserve the body for display text and put structured event details in attr
 uses `type: any` for observations/configuration/parameters; their detailed contract is documented
 here and exercised through the real SDK encoder in tests. Weaver checks the event/attribute
 definitions; it does not validate every nested card property or game rule.
+The event name is also sent as a display message, so backends that do not expose the native
+OTLP event-name field still show readable log rows.
 
 ## Observation projection
 
@@ -43,6 +45,8 @@ descriptions, money, round counters, hand levels, blind descriptions, used vouch
 Absent fields remain absent. The remaining deck's contents/order and the seed are excluded from
 observations; deck count/limit remain. Face-down cards retain only their API ID and state flags.
 Unknown future API fields are excluded.
+Known map fields such as `used_vouchers` normalize the Lua encoder's empty-array representation
+to an empty object; nonempty maps retain their entries.
 
 `balatro.bot.command.parameters.cards` preserves zero-based indices into the preceding observation's
 `hand.cards` array in **request order**, not necessarily engine scoring order. API card IDs are
@@ -91,8 +95,8 @@ linked spans may be absent. Backends must support structured log attributes to r
 - [x] CI already runs registry check, generated-reference drift checks, baseline diff and live-check on SDK-encoded logs.
 - [~] Generated language-code formatting is inapplicable: the generated artifact is Markdown; source Python uses pinned Ruff.
 - [x] Tests cover structured OTLP values, correlation, redaction, assistance, unresolved commands, observer failure and full autoplay-loop capture.
-- [x] Twelve Python tests and all three Lua suites pass; pinned Ruff and diff whitespace checks pass.
+- [x] Thirteen Python tests and all three Lua suites pass; pinned Ruff and diff whitespace checks pass.
 - [x] Weaver registry check and SDK-sample live-check pass with zero violations; an invalid sequence-type fixture is rejected.
 - [x] Regenerated bot reference matches a second generation, scoring reference is unchanged, and registry baseline diff completes.
 - [x] Changed source, registry, templates and generated reference were re-read; remaining delivery and nested-schema limits are stated above.
-- [ ] Live game delivery for these observation events has not been exercised.
+- [x] Live runs on 2026-11-16 send all three services through compy to Bronto. Seed `N16A0007` confirms projected card fields, a clear incomplete flag and matching client/server trace context. Early seeds `N16A0001`–`N16A0003` exposed the Lua empty-map shape and are marked incomplete; subsequent runs use the normalization fix.

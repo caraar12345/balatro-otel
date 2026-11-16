@@ -231,6 +231,7 @@ def event(name, attributes, severity=SeverityNumber.INFO):
     runtime().logger.emit(
         event_name=name,
         timestamp=time.time_ns(),
+        body=name,
         severity_number=severity,
         attributes={**(_run_attributes.get() or {}), **attributes},
     )

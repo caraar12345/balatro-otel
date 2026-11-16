@@ -23,6 +23,12 @@ def pick(value, keys):
     return {k: copy.deepcopy(value[k]) for k in keys if k in value}
 
 
+def map_items(value):
+    # Lua's JSON encoder represents empty tables as arrays, including fields
+    # whose nonempty form is an object, such as used_vouchers.
+    return ({} if value == [] else value).items()
+
+
 def card_observation(card):
     state = pick(card.get("state", {}), ("debuff", "hidden", "highlight"))
     result = {"state": state, **pick(card, ("id",))}
@@ -54,16 +60,16 @@ def observation(state):
     if "hands" in state:
         result["hands"] = {
             name: pick(hand, ("order", "level", "chips", "mult", "played", "played_this_round"))
-            for name, hand in state["hands"].items()
+            for name, hand in map_items(state["hands"])
         }
     if "blinds" in state:
         result["blinds"] = {
             slot: pick(blind, ("type", "status", "name", "effect", "score", "tag_name", "tag_effect"))
-            for slot, blind in state["blinds"].items()
+            for slot, blind in map_items(state["blinds"])
         }
     if "used_vouchers" in state:
         result["used_vouchers"] = {
-            key: value for key, value in state["used_vouchers"].items() if isinstance(value, str)
+            key: value for key, value in map_items(state["used_vouchers"]) if isinstance(value, str)
         }
     return result
 
