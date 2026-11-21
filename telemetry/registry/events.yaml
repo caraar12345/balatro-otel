@@ -14,6 +14,14 @@ imports:
     - app.jank
 
 events:
+  - name: balatro.playlog.entry
+    stability: development
+    requirement_level: recommended
+    brief: A line the PlayLog mod wrote to its run log; the body is the line as plain text, and the record is correlated with the span that was open.
+    attributes:
+      - ref: balatro.playlog.run_id
+        requirement_level: required
+
   - name: balatro.effect
     stability: development
     requirement_level: recommended

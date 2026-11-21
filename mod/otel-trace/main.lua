@@ -69,6 +69,11 @@ local perf
 
 local function innermost() return scoring or hand or pack or shop or blind or run end
 
+-- PlayLog lines become log records and its run ID goes on all run telemetry. PlayLog loads first
+-- (priority -10); if it has not, attaching is retried at each run start.
+local playlog = assert(SMODS.load_file("playlog.lua"))()
+local playlog_attached = playlog.install(otel, innermost)
+
 -- A tracing bug must never crash the game (and lose the run), so every hook body is guarded.
 local function safe(f, ...)
   local ok, err = pcall(f, ...)
@@ -183,6 +188,7 @@ local function end_run(outcome)
   })
   run = nil
   otel.common["balatro.run.seed"] = nil
+  otel.common[playlog.RUN_ID] = nil
   otel.flush()
 end
 
@@ -196,6 +202,8 @@ function Game:start_run(args)
     -- live heap; a leak shows as this rising from run to run.
     collectgarbage("collect")
     otel.common["balatro.run.seed"] = G.GAME.pseudorandom.seed
+    playlog_attached = playlog_attached or playlog.install(otel, innermost)
+    otel.common[playlog.RUN_ID] = playlog.run_id() -- PlayLog sets it during start_run, resumes keep it
     run = otel.start("balatro.run", {
       ["balatro.deck.name"] = G.GAME.selected_back.name,
       ["balatro.stake"] = G.GAME.stake,

@@ -26,6 +26,7 @@ jobs:
           SMODS_DIR=/tmp/smods-1.0.0-beta-1814a luajit tests/otel_test.lua /tmp/otlp
           SMODS_DIR=/tmp/smods-1.0.0-beta-1814a luajit tests/scoring_test.lua /tmp/otlp
           SMODS_DIR=/tmp/smods-1.0.0-beta-1814a luajit tests/bot_test.lua /tmp/otlp
+          SMODS_DIR=/tmp/smods-1.0.0-beta-1814a luajit tests/playlog_test.lua /tmp/otlp
       - name: Python bot instrumentation
         run: |
           python3 -m venv /tmp/bot-venv

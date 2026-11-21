@@ -2,7 +2,8 @@ file_format: definition/2
 
 # Trace tree: balatro.run -> balatro.blind -> balatro.hand -> balatro.hand.scoring -> balatro.card.evaluate
 #             balatro.run -> balatro.shop -> balatro.booster_pack
-# Every span also carries session.id and, during a run, balatro.run.seed.
+# Every span also carries session.id and, during a run, balatro.run.seed (and
+# balatro.playlog.run_id with the PlayLog mod).
 # A span cut short by a crash has status ERROR and error.type = lua_error.
 
 spans:
@@ -18,6 +19,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: required
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.deck.name
         requirement_level: recommended
       - ref: balatro.stake
@@ -52,6 +56,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.blind.name
         requirement_level: required
       - ref: balatro.ante
@@ -108,6 +115,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.hand.card_count
         requirement_level: recommended
       - ref: balatro.hand.type
@@ -136,6 +146,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: error.type
         requirement_level:
           conditionally_required: If scoring crashed.
@@ -154,6 +167,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.card.name
         requirement_level: required
       - ref: balatro.card.key
@@ -209,6 +225,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.ante
         requirement_level: recommended
       - ref: balatro.dollars
@@ -229,6 +248,9 @@ spans:
         requirement_level: recommended
       - ref: balatro.run.seed
         requirement_level: recommended
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: During a run, when the PlayLog mod is installed.
       - ref: balatro.card.name
         requirement_level: recommended
       - ref: balatro.card.key

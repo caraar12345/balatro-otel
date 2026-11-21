@@ -82,6 +82,11 @@ attributes:
     stability: development
     brief: Seed of the current run; set on every span and log record started during a run.
     examples: ['7LB2WVPK']
+  - key: balatro.playlog.run_id
+    type: string
+    stability: development
+    brief: Run ID from the PlayLog mod (also its playlog_runs/<id>.txt file name); set on every span and log record started during a run when PlayLog is installed.
+    examples: ['20261121_164730_502528']
   - key: balatro.run.resumed
     type: boolean
     stability: development

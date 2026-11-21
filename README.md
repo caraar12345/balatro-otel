@@ -34,6 +34,11 @@ reported Joker triggers, and effect-handler calls. These describe execution, not
 causal share of the score. See the [scoring guide](docs/scoring-telemetry-design.md) and
 [generated signal reference](docs/scoring-signals.md) for scope and interpretation.
 
+With the [PlayLog](https://github.com/nh6574/PlayLog) mod installed, every line of its run log is also
+sent as a log record (`balatro.playlog.entry`), correlated with the span that was open, and PlayLog's
+run ID (`balatro.playlog.run_id`, its `playlog_runs/<id>.txt` name) is on all of a run's telemetry. In
+Loki, for example: `{service_name="balatro"} | balatro_playlog_run_id="20261121_164730_502528"`.
+
 Every name is defined in a [Weaver](https://github.com/open-telemetry/weaver) registry
 (`telemetry/registry`) on top of OpenTelemetry semantic conventions v1.44.0.
 
@@ -67,7 +72,7 @@ the [mod's README](mod/otel-trace/README.md#privacy).
 ## Repository
 
 ```
-mod/otel-trace/          the mod: main.lua (game hooks), scoring.lua, bot.lua, otel.lua (OTLP exporter)
+mod/otel-trace/          the mod: main.lua (game hooks), scoring.lua, bot.lua, playlog.lua, otel.lua (OTLP exporter)
 telemetry/stack/         Collector + Jaeger + Prometheus (+ log file) for local use
 telemetry/registry/      Weaver registry: attributes, spans, events, metrics
 telemetry/               test tooling: live-check, autoplay, container runner, chaos, scenarios
@@ -85,6 +90,7 @@ lua tests/otel_test.lua /tmp/otlp   # asserts the OTLP shape, writes sample trac
                                     # (SMODS_DIR: a Steamodded checkout, for its json library)
 lua tests/scoring_test.lua /tmp/otlp # checks scoring hooks and writes scoring signal samples
 lua tests/bot_test.lua /tmp/otlp     # checks RPC context, async completion, and game span links
+lua tests/playlog_test.lua /tmp/otlp # checks PlayLog lines as log records and the PlayLog run ID
 docker run --rm -v "$PWD/telemetry:/telemetry" otel/weaver:v0.28.0 registry check --v2 -r /telemetry/registry
 ```
 

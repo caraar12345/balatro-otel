@@ -18,6 +18,12 @@ W3C traceparent headers connect those server spans to instrumented clients; game
 the command active at their creation. The bot remains optional. The repository's Python player
 exports its own run, decision and client telemetry under `balatro-autoplay`.
 
+With [PlayLog](https://github.com/nh6574/PlayLog) installed, each line PlayLog writes is also sent as
+a log record (event `balatro.playlog.entry`, the line as its body) linked to the span that was open,
+and PlayLog's run ID (`balatro.playlog.run_id`, the name of its `playlog_runs/<id>.txt` file) goes on
+every span and log record of the run. The two mods find each other on their own; there is nothing to
+set up.
+
 Unofficial fan project, not affiliated with or endorsed by LocalThunk or Playstack.
 
 ## Install
@@ -56,7 +62,7 @@ The environment variable takes precedence over the in-game setting:
 
 The mod sends only to the endpoint above, which is your own machine unless you change it. It sends
 game data (seed, deck, cards, scores, timings), the OS type, your GPU/renderer name, display size and
-game settings, a random session id per game start, and for crashes and mod errors the Lua error
+game settings, a random session id per game start, the lines PlayLog writes if it is installed, and for crashes and mod errors the Lua error
 message and stack trace (they name game and mod files). It reads no account or Steam data. If nothing
 listens on the endpoint, the data is dropped. Disable the mod in Steamodded's Mods menu to stop it.
 

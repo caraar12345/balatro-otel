@@ -56,6 +56,9 @@ attribute_groups:
       - ref: balatro.run.seed
         requirement_level:
           conditionally_required: While a run is in progress.
+      - ref: balatro.playlog.run_id
+        requirement_level:
+          conditionally_required: While a run is in progress and the PlayLog mod is installed.
 
   - id: balatro.app.jank
     visibility: public

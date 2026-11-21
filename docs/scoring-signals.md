@@ -29,6 +29,7 @@ Evaluation of one card or joker in one scoring context. Only recorded when the e
 | `balatro.card.seal` | Seal name at evaluation entry; omitted when absent. |
 | `balatro.card.set` | Card set. |
 | `balatro.card.suit` | Base suit at evaluation entry, not effective scoring suit. |
+| `balatro.playlog.run_id` | Run ID from the PlayLog mod (also its playlog_runs/<id>.txt file name); set on every span and log record started during a run when PlayLog is installed. |
 | `balatro.run.seed` | Seed of the current run; set on every span and log record started during a run. |
 | `session.id` | A unique ID to identify a session. |
 
@@ -44,6 +45,7 @@ One played hand, from scoring until its scoring animation has played out.
 | `balatro.hand.mult` | Final mult of the hand. |
 | `balatro.hand.score` | Score the hand added to the blind, floor(chips × mult) as the game counts it. |
 | `balatro.hand.type` | Poker hand that was played. |
+| `balatro.playlog.run_id` | Run ID from the PlayLog mod (also its playlog_runs/<id>.txt file name); set on every span and log record started during a run when PlayLog is installed. |
 | `balatro.run.seed` | Seed of the current run; set on every span and log record started during a run. |
 | `error.type` | Describes a class of error the operation ended with. |
 | `session.id` | A unique ID to identify a session. |
@@ -54,6 +56,7 @@ The synchronous score calculation of a hand (no animation).
 
 | Attribute | Meaning |
 | --- | --- |
+| `balatro.playlog.run_id` | Run ID from the PlayLog mod (also its playlog_runs/<id>.txt file name); set on every span and log record started during a run when PlayLog is installed. |
 | `balatro.run.seed` | Seed of the current run; set on every span and log record started during a run. |
 | `error.type` | Describes a class of error the operation ended with. |
 | `session.id` | A unique ID to identify a session. |
